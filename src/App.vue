@@ -19,92 +19,97 @@ onMounted(() => {
   addRandomEmojis();
 });
 
-function addRandomEmojis() {
+const emojis = [
+  "🎈",
+  "🎉",
+  "✨",
+  "🌟",
+  "🎶",
+  "🍀",
+  "🐰",
+  "🐱",
+  "🐶",
+  "🦄",
+  "🐥",
+  "🌸",
+  "🍓",
+  "🍒",
+  "🧸",
+  "🎀",
+  "💖",
+  "💐",
+  "🌈",
+  "🫧",
+  "🦋",
+  "🐿️",
+  "🛍️",
+  "🧁",
+  "🍰",
+  "🪄",
+  "🦖",
+  "🦕",
+  "🙀",
+  "👩🏻‍🚀",
+  "🧑🏻‍🚀",
+  "🪐",
+  "🌏",
+  "🍭",
+  "🍬",
+  "🍨",
+  "🧁",
+  "💩",
+  "🎡",
+];
+
+function createEmoji() {
   const emojiContainer = document.getElementById("emoji-container");
-  const emojis = [
-    "🐰",
-    "🐱",
-    "🐶",
-    "🦄",
-    "🐥",
-    "🌸",
-    "🍓",
-    "🍒",
-    "🧸",
-    "🎀",
-    "💖",
-    "💐",
-    "🌈",
-    "🫧",
-    "🦋",
-    "🐿️",
-    "🛍️",
-    "🧁",
-    "🍰",
-    "🪄",
-    "🦖",
-    "🦕",
-    "🙀",
-    "👩🏻‍🚀",
-    "🧑🏻‍🚀",
-    "🪐",
-    "🌏",
-    "🍭",
-    "🍬",
-    "🍨",
-    "🧁",
-    "💩",
-    "🎡",
-  ];
+  if (!emojiContainer) return;
 
-  const emojiObjects: { el: HTMLElement; x: number; y: number; vx: number; vy: number }[] = [];
+  const emoji = document.createElement("div");
+  emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+  emoji.style.position = "absolute";
+  emoji.style.fontSize = `${Math.random() * 24 + 24}px`;
+  emoji.style.left = `${Math.random() * 100}vw`;
+  emoji.style.top = `${Math.random() * 100}vh`;
+  emoji.style.cursor = "pointer";
+  emoji.style.transition = "transform 0.5s ease-out, opacity 0.5s ease-out";
+  emoji.style.userSelect = "none";
+  emoji.style.zIndex = "0";
 
-  for (let i = 0; i < 350; i++) {
-    // Bisa diganti 350 kalau kuat performa
-    const emoji = document.createElement("span");
-    emoji.classList.add("emoji");
-    emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+  const dx = (Math.random() - 0.5) * 0.5;
+  const dy = (Math.random() - 0.5) * 0.5;
 
-    emoji.addEventListener("click", () => {
-      popupSound.play();
-      emoji.classList.add("exploding");
-      setTimeout(() => emoji.remove(), 500);
-    });
+  let x = parseFloat(emoji.style.left);
+  let y = parseFloat(emoji.style.top);
 
-    emojiContainer?.appendChild(emoji);
+  const moveInterval = setInterval(() => {
+    x += dx;
+    y += dy;
 
-    // Set posisi awal acak
-    const x = Math.random() * window.innerWidth;
-    const y = Math.random() * window.innerHeight;
-    emoji.style.left = `${x}px`;
-    emoji.style.top = `${y}px`;
+    if (x < 0) x = 100;
+    if (x > 100) x = 0;
+    if (y < 0) y = 100;
+    if (y > 100) y = 0;
 
-    const speed = 1 + Math.random() * 1.5; // 1.0 - 2.5 px per frame
-    const angle = Math.random() * 2 * Math.PI; // acak arah
-    const vx = Math.cos(angle) * speed;
-    const vy = Math.sin(angle) * speed;
+    emoji.style.left = `${x}vw`;
+    emoji.style.top = `${y}vh`;
+  }, 50);
 
-    emojiObjects.push({ el: emoji, x, y, vx, vy });
-  }
+  emoji.addEventListener("click", () => {
+    emoji.style.transform = "scale(2)";
+    emoji.style.opacity = "0";
+    setTimeout(() => {
+      clearInterval(moveInterval);
+      emoji.remove();
+    }, 500);
+    popupSound.play();
+  });
 
-  function animate() {
-    for (const obj of emojiObjects) {
-      obj.x += obj.vx;
-      obj.y += obj.vy;
+  emojiContainer.appendChild(emoji);
+}
 
-      // Update dengan transform untuk lebih ringan
-      obj.el.style.transform = `translate(${obj.x}px, ${obj.y}px)`;
-
-      // Mengatur posisi emoji yang melampaui batas layar agar muncul kembali dari sisi lainnya
-      if (obj.x < 0) obj.x = window.innerWidth;
-      if (obj.x > window.innerWidth) obj.x = 0;
-      if (obj.y < 0) obj.y = window.innerHeight;
-      if (obj.y > window.innerHeight) obj.y = 0;
-    }
-    requestAnimationFrame(animate);
-  }
-
-  animate();
+function addRandomEmojis() {
+  setInterval(createEmoji, 1000);
 }
 
 function moveButtonRandomly() {
@@ -278,83 +283,13 @@ footer {
 }
 
 #emoji-container {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-}
-
-.emoji {
-  position: absolute;
-  font-size: 2rem;
-  opacity: 0.8;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
   pointer-events: auto;
-  user-select: none;
-  will-change: transform, left, top;
-}
-
-@keyframes emojiMovement {
-  0% {
-    transform: translate(0, 0);
-    opacity: 0.5;
-  }
-  25% {
-    transform: translate(30px, 30px);
-    opacity: 1;
-  }
-  50% {
-    transform: translate(60px, 60px);
-    opacity: 0.7;
-  }
-  75% {
-    transform: translate(90px, -40px);
-    opacity: 0.9;
-  }
-  100% {
-    transform: translate(0, 0);
-    opacity: 0.5;
-  }
-}
-
-.pop-explode {
-  animation: popExplode 0.5s forwards;
-  pointer-events: none;
-}
-
-@keyframes popExplode {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(2);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(0);
-    opacity: 0;
-  }
-}
-
-@keyframes explode {
-  0% {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(2) rotate(180deg);
-    opacity: 0.7;
-  }
-  100% {
-    transform: scale(0) rotate(360deg);
-    opacity: 0;
-  }
-}
-
-.exploding {
-  animation: explode 0.5s ease-out forwards !important;
-  pointer-events: none;
+  z-index: -1;
 }
 </style>
